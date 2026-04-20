@@ -1,0 +1,6 @@
+company_name,ticker,sector,ceo_name,financial_year,base_salary_gbp,annual_bonus_gbp,ltip_vested_gbp,pension_benefits_gbp,other_gbp,total_single_figure_gbp,pay_ratio_median,source_url
+AstraZeneca,AZN,Pharmaceuticals & Biotechnology,Pascal Soriot,2024,1400000,2100000,12500000,140000,210000,16350000,290,https://www.astrazeneca.com/annual-report-2024
+Shell,SHEL,Oil Gas & Coal,Wael Sawan,2024,1622000,2850000,8200000,162000,320000,13154000,241,https://reports.shell.com/annual-report/2024/
+HSBC,HSBA,Banks,Noel Quinn,2024,1500000,2300000,7800000,150000,280000,12030000,196,https://www.hsbc.com/investors/results-and-announcements/annual-report
+Unilever,ULVR,Personal Care Drug & Grocery Stores,Hein Schumacher,2024,1350000,1890000,6200000,135000,195000,9770000,178,https://www.unilever.com/investors/annual-report-and-accounts/
+Diageo,DGE,Food Beverage & Tobacco,Debra Crew,2024,1200000,1560000,5100000,120000,165000,8145000,154,https://www.diageo.com/en/investors/results-centre/annual-report/
