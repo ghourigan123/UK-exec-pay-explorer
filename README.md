@@ -12,7 +12,9 @@ Reward analysts, journalists, and investors who want to examine UK executive pay
 
 ## Screenshots
 
-_Screenshots will be added after the first public deployment._
+![Overview table](docs/screenshots/overview.png)
+![Sector comparison](docs/screenshots/sector.png)
+![Pay composition](docs/screenshots/composition.png)
 
 ---
 

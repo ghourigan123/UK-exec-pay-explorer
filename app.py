@@ -6,10 +6,19 @@ import pandas as pd
 import streamlit as st
 
 from src.charts import pay_composition_chart, sector_comparison_chart
-from src.data_loader import load_data
-from src.transforms import filter_data
+from src.data_loader import load_data, validate_data
+from src.transforms import filter_data, format_gbp, format_ratio
 
 DATA_PATH = Path(__file__).parent / "data" / "ceo_pay_2024.csv"
+
+_COMP_DISPLAY = [
+    ("Base Salary", "base_salary_gbp"),
+    ("Annual Bonus", "annual_bonus_gbp"),
+    ("LTIP Vested", "ltip_vested_gbp"),
+    ("Pension", "pension_benefits_gbp"),
+    ("Other", "other_gbp"),
+    ("Total (Single Figure)", "total_single_figure_gbp"),
+]
 
 
 def render_header() -> None:
@@ -58,14 +67,8 @@ def render_overview(df: pd.DataFrame) -> None:
 
     c1, c2, c3 = st.columns(3)
     c1.metric("Companies shown", len(filtered))
-    c2.metric(
-        "Median total comp",
-        f"£{int(filtered['total_single_figure_gbp'].median()):,}",
-    )
-    c3.metric(
-        "Median pay ratio",
-        f"{int(filtered['pay_ratio_median'].median())}:1",
-    )
+    c2.metric("Median total comp", format_gbp(filtered["total_single_figure_gbp"].median()))
+    c3.metric("Median pay ratio", format_ratio(filtered["pay_ratio_median"].median()))
 
     st.dataframe(
         filtered[
@@ -89,6 +92,15 @@ def render_overview(df: pd.DataFrame) -> None:
         ),
         use_container_width=True,
         hide_index=True,
+        column_config={
+            "Base Salary": st.column_config.NumberColumn("Base Salary", format="£%d"),
+            "Annual Bonus": st.column_config.NumberColumn("Annual Bonus", format="£%d"),
+            "LTIP Vested": st.column_config.NumberColumn("LTIP Vested", format="£%d"),
+            "Total (Single Figure)": st.column_config.NumberColumn(
+                "Total (Single Figure)", format="£%d"
+            ),
+            "Pay Ratio": st.column_config.NumberColumn("Pay Ratio (CEO:1)", format="%d:1"),
+        },
     )
 
 
@@ -99,7 +111,7 @@ def render_sector_comparison(df: pd.DataFrame) -> None:
 
 
 def render_pay_composition(df: pd.DataFrame) -> None:
-    """Render stacked bar pay composition for two selected CEOs."""
+    """Render stacked bar pay composition with absolute values table for two CEOs."""
     st.subheader("Pay composition breakdown")
     ceo_names = sorted(df["ceo_name"].tolist())
     col1, col2 = st.columns(2)
@@ -110,16 +122,28 @@ def render_pay_composition(df: pd.DataFrame) -> None:
 
     if ceo_a == ceo_b:
         st.info("Select two different CEOs to compare.")
-    else:
-        st.plotly_chart(pay_composition_chart(df, ceo_a, ceo_b), use_container_width=True)
+        return
+
+    st.plotly_chart(pay_composition_chart(df, ceo_a, ceo_b), use_container_width=True)
+
+    row_a = df[df["ceo_name"] == ceo_a].iloc[0]
+    row_b = df[df["ceo_name"] == ceo_b].iloc[0]
+
+    table_rows = {
+        "Component": [label for label, _ in _COMP_DISPLAY],
+        ceo_a: [format_gbp(row_a[col]) for _, col in _COMP_DISPLAY],
+        ceo_b: [format_gbp(row_b[col]) for _, col in _COMP_DISPLAY],
+    }
+    st.dataframe(pd.DataFrame(table_rows), use_container_width=True, hide_index=True)
 
 
 def render_footer() -> None:
-    """Render data source attribution and GitHub link."""
+    """Render data source attribution and project disclaimer."""
     st.divider()
     st.caption(
-        "Data sourced from publicly available FTSE 100 Annual Remuneration Reports. "
-        "Built by [Glenn Hourigan](https://github.com/ghourigan123/UK-exec-pay-explorer) as a portfolio project."
+        "Built by [Glenn Hourigan](https://github.com/ghourigan123/UK-exec-pay-explorer). "
+        "All data sourced from publicly available FTSE 100 Annual Remuneration Reports. "
+        "This is an independent portfolio project and is not affiliated with any employer."
     )
 
 
@@ -129,6 +153,12 @@ def main() -> None:
     render_header()
 
     df = load_data(DATA_PATH)
+
+    issues = validate_data(df)
+    if issues:
+        with st.expander(f"Data quality warning ({len(issues)} issue(s) found)", expanded=True):
+            for issue in issues:
+                st.warning(issue)
 
     view = st.sidebar.radio(
         "View",

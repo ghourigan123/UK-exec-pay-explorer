@@ -5,6 +5,16 @@ from typing import Tuple
 import pandas as pd
 
 
+def format_gbp(value: float) -> str:
+    """Format a GBP value with pound sign and thousands separators."""
+    return f"£{int(value):,}"
+
+
+def format_ratio(value: float) -> str:
+    """Format a pay ratio as N:1."""
+    return f"{int(value)}:1"
+
+
 def filter_data(
     df: pd.DataFrame,
     sector: str,
